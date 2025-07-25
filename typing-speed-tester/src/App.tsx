@@ -1,15 +1,57 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import './styles.css';
+
 
 function App() {
-  const [started, setStarted] = useState(false);
-  const [text, setText] = useState('');
-  const [input, setInput] = useState('');
-
   const sampleText = `The quick brown fox jumps over the lazy dog.`;
+  
+  const [started, setStarted] = useState(false);
+  const [input, setInput] = useState('');
+  const [timeLeft, setTimeLeft] = useState(60); // seconds
+  const [isTimeRunning, setIsTimeRunning] = useState(false);
+  const [wpm, setWpm] = useState<number | null>(null);
 
+
+  // 🟩 Starts the test
   const handleStart = () => {
     setStarted(true);
+    setIsTimeRunning(true);
     setInput('');
+    setTimeLeft(60);
+    setWpm(null);
+  };
+
+  // 🕒 TIMER EFFECT
+
+  useEffect(() => {
+    let timer: number;
+
+    if (isTimeRunning && timeLeft > 0) {
+      timer = setTimeout(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (isTimeRunning && timeLeft === 0) {
+      setIsTimeRunning(false);
+      calculateWPM();
+    }
+
+    return () => clearTimeout(timer);
+  }, [isTimeRunning, timeLeft]);
+
+
+ const handleRestart = () => {
+  setStarted(false);
+  setIsTimeRunning(false);
+  setInput('');
+  setTimeLeft(60);
+  setWpm(null);
+};
+
+  // 🧮 WPM Calculation
+  const calculateWPM = () => {
+    const words = input.trim().split(' ').filter((word) => word !== '').length;
+    const wpmValue = Math.round(words);
+    setWpm(wpmValue);
   };
 
   return (
@@ -22,6 +64,8 @@ function App() {
 
       {started && (
         <>
+          <h3>Time Left: {timeLeft}s</h3>
+
           <p style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>
             {sampleText}
           </p>
@@ -32,7 +76,15 @@ function App() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Start typing here..."
+            disabled={!isTimeRunning}
           />
+
+          {wpm !== null && (
+            <>
+            <h2>⏱️ Your WPM: {wpm}</h2>
+            <button onClick={handleRestart}>Restart</button>
+            </>
+          )}
         </>
       )}
     </div>
