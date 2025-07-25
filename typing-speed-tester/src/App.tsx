@@ -1,8 +1,20 @@
 import { useState, useEffect } from "react";
 import "./styles.css";
+const paragraphList: string[] = [
+  "The quick brown fox jumps over the lazy dog.",
+  "Typing fast is a skill that improves with practice.",
+  "JavaScript and TypeScript are essential for modern web development.",
+  "Consistency is the key to mastering programming.",
+  "Debugging is like being the detective in a crime movie.",
+  "Learning to code is like learning a new language.",
+  "Focus on progress, not perfection, when coding.",
+  "React is a powerful library for building user interfaces.",
+  "A good developer writes readable and maintainable code.",
+  "Persistence and curiosity fuel great developers.",
+];
 
 function App() {
-  const sampleText = `The quick brown fox jumps over the lazy dog.`;
+  const [sampleText, setSampleText] = useState<string>("");
 
   const [started, setStarted] = useState(false);
   const [input, setInput] = useState("");
@@ -10,15 +22,33 @@ function App() {
   const [isTimeRunning, setIsTimeRunning] = useState(false);
   const [wpm, setWpm] = useState<number | null>(null);
 
+  const calculateAccuracy = () => {
+    let correct = 0;
+    for (let i = 0; i < input.length; i++) {
+      if (input[i] === sampleText[i]) {
+        correct++;
+      }
+    }
+    const accuracy = input.length > 0 ? (correct / input.length) * 100 : 0;
+    return accuracy.toFixed(1);
+  };
+
+  useEffect(() => {
+  const randomIndex = Math.floor(Math.random() * paragraphList.length);
+  setSampleText(paragraphList[randomIndex]);
+}, []);
+
   // 🟩 Starts the test
   const handleStart = () => {
+    const randomIndex = Math.floor(Math.random() * paragraphList.length);
+    setSampleText(paragraphList[randomIndex]);
     setStarted(true);
     setIsTimeRunning(true);
     setInput("");
     setTimeLeft(60);
     setWpm(null);
   };
-
+  
   // 🕒 TIMER EFFECT
 
   useEffect(() => {
@@ -63,6 +93,9 @@ function App() {
       {started && (
         <>
           <h3>Time Left: {timeLeft}s</h3>
+          <p style={{ fontSize: "1.1rem", marginBottom: "1rem" }}>
+            Accuracy: <strong>{calculateAccuracy()}%</strong>
+          </p>
 
           <div
             style={{
